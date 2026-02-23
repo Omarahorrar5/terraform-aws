@@ -1,14 +1,30 @@
-# /bin/bash
-sudo apt-get update -y &&
-sudo apt-get install -y \
-apt-transport-https \
-ca-certificates \
-curl \
-gnupg-agent \
-software-properties-common &&
+#!/bin/bash
 
-sudo -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - &&
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" &&
-sudo apt-get update -y &&
-sudo apt-get install docker-ce docker-ce-cli containerd.io -y &&
-sudo usermod -aG docker ubuntu
+apt-get update -y
+
+apt-get install -y \
+  ca-certificates \
+  curl \
+  gnupg
+
+install -m 0755 -d /etc/apt/keyrings
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" \
+  > /etc/apt/sources.list.d/docker.list
+
+apt-get update -y
+
+apt-get install -y docker-ce docker-ce-cli containerd.io
+
+usermod -aG docker ubuntu
+
+systemctl enable docker
+systemctl start docker
